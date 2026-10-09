@@ -1,0 +1,413 @@
+/* ============================================================
+   GENERAL
+   ============================================================ */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+
+    background-image: url("/library.jpeg");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+
+    min-height: 100vh;
+
+    color: #4a3040;
+}
+
+
+/* ============================================================
+   MAIN CONTAINER
+   ============================================================ */
+
+#app {
+    width: 90%;
+    max-width: 1200px;
+    margin: 30px auto;
+}
+
+
+/* ============================================================
+   LOGIN
+   ============================================================ */
+
+#loginPage {
+    width: 400px;
+    max-width: 90%;
+
+    margin: 80px auto;
+    padding: 35px;
+
+    background: rgba(255, 255, 255, 0.97);
+
+    border-radius: 15px;
+
+    box-shadow:
+        0 8px 25px rgba(190, 70, 120, 0.30);
+
+    text-align: center;
+}
+
+#loginPage h1 {
+    margin-bottom: 10px;
+    color: #c2185b;
+}
+
+#loginPage h2 {
+    margin-bottom: 30px;
+
+    font-weight: normal;
+
+    color: #79506a;
+}
+
+
+/* ============================================================
+   PAGE
+   ============================================================ */
+
+.page {
+    background: rgba(255, 255, 255, 0.97);
+
+    padding: 30px;
+
+    border-radius: 15px;
+
+    box-shadow:
+        0 8px 25px rgba(190, 70, 120, 0.20);
+}
+
+
+/* ============================================================
+   HEADINGS
+   ============================================================ */
+
+.page h1 {
+    color: #c2185b;
+
+    border-bottom: 3px solid #f48fb1;
+
+    padding-bottom: 10px;
+
+    margin-top: 0;
+}
+
+.librarySection h2 {
+    color: #c2185b;
+
+    border-bottom: 3px solid #f48fb1;
+
+    padding-bottom: 10px;
+}
+
+
+/* ============================================================
+   WELCOME MESSAGE
+   ============================================================ */
+
+.welcome {
+    color: #79506a;
+
+    font-size: 17px;
+
+    margin-bottom: 20px;
+}
+
+
+/* ============================================================
+   LABELS
+   ============================================================ */
+
+label {
+    display: block;
+
+    margin-top: 15px;
+    margin-bottom: 6px;
+
+    font-weight: bold;
+
+    color: #c2185b;
+}
+
+
+/* ============================================================
+   INPUTS AND SELECTS
+   ============================================================ */
+
+input,
+select {
+    width: 100%;
+
+    padding: 12px;
+
+    border: 1px solid #e6a8c2;
+
+    border-radius: 7px;
+
+    font-size: 15px;
+
+    margin-bottom: 10px;
+
+    background: #fff7fa;
+
+    color: #4a3040;
+}
+
+input:focus,
+select:focus {
+    outline: none;
+
+    border-color: #e91e63;
+
+    box-shadow:
+        0 0 0 3px rgba(233, 30, 99, 0.15);
+
+    background: white;
+}
+
+
+/* ============================================================
+   FORMS
+   ============================================================ */
+
+.libraryForm {
+    margin-bottom: 20px;
+}
+
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+
+button {
+    padding: 11px 18px;
+
+    margin: 8px 5px 8px 0;
+
+    border: none;
+
+    border-radius: 7px;
+
+    cursor: pointer;
+
+    background: #c2185b;
+
+    color: white;
+
+    font-size: 14px;
+
+    font-weight: bold;
+
+    transition: 0.2s;
+}
+
+button:hover {
+    background: #e91e63;
+
+    transform: translateY(-1px);
+}
+
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+
+.navigation {
+    margin-top: 20px;
+
+    text-align: center;
+
+    padding-bottom: 15px;
+}
+
+.navigation button {
+    background: #c2185b;
+}
+
+.navigation button:hover {
+    background: #e91e63;
+}
+
+
+/* ============================================================
+   DASHBOARD STATISTICS
+   ============================================================ */
+
+.stats {
+    display: grid;
+
+    grid-template-columns:
+        repeat(auto-fit, minmax(170px, 1fr));
+
+    gap: 15px;
+
+    margin: 25px 0;
+}
+
+.statCard {
+    padding: 20px;
+
+    background: #fff0f5;
+
+    border-left: 5px solid #e91e63;
+
+    border-radius: 10px;
+
+    text-align: center;
+
+    transition: 0.2s;
+}
+
+.statCard:hover {
+    background: #ffe0eb;
+
+    transform: translateY(-2px);
+}
+
+.statCard h3 {
+    margin: 0;
+
+    color: #c2185b;
+
+    font-size: 16px;
+}
+
+.statCard p {
+    font-size: 30px;
+
+    font-weight: bold;
+
+    margin: 10px 0;
+
+    color: #c2185b;
+}
+
+
+/* ============================================================
+   TABLES
+   ============================================================ */
+
+table {
+    width: 100%;
+
+    border-collapse: collapse;
+
+    margin-top: 20px;
+
+    background: white;
+
+    border-radius: 8px;
+
+    overflow: hidden;
+}
+
+th {
+    padding: 13px;
+
+    background: #c2185b;
+
+    color: white;
+
+    text-align: left;
+}
+
+td {
+    padding: 12px;
+
+    border-bottom:
+        1px solid #f0c4d5;
+
+    color: #4a3040;
+}
+
+tr:hover {
+    background: #fff0f5;
+}
+
+
+/* ============================================================
+   CURRENT BOOK AVAILABILITY
+   ============================================================ */
+
+.librarySection > table {
+    width: 100%;
+}
+
+
+/* ============================================================
+   SEARCH
+   ============================================================ */
+
+.searchBox {
+    margin-top: 20px;
+
+    margin-bottom: 20px;
+
+    border: 1px solid #d98aa8;
+}
+
+.searchBox:focus {
+    border-color: #e91e63;
+}
+
+
+/* ============================================================
+   LOW STOCK
+   ============================================================ */
+
+.lowStock {
+    color: red !important;
+
+    font-weight: bold;
+}
+
+.lowStock td {
+    color: red !important;
+
+    font-weight: bold;
+}
+
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+
+@media (max-width: 700px) {
+
+    #app {
+        width: 95%;
+    }
+
+    .page {
+        padding: 18px;
+    }
+
+    .librarySection {
+        overflow-x: auto;
+    }
+
+    table {
+        font-size: 13px;
+
+        display: block;
+
+        overflow-x: auto;
+    }
+
+    .navigation {
+        text-align: center;
+    }
+
+    .navigation button {
+        margin: 5px 2px;
+    }
+
+    .stats {
+        grid-template-columns: 1fr;
+    }
+}
