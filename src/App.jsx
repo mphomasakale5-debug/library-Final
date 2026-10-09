@@ -1,46 +1,35 @@
+
 import { useEffect, useState } from "react";
 import "./App.css";
 
 function App() {
-  // =========================
   // LOGIN
-  // =========================
   const [loggedIn, setLoggedIn] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("");
 
-  // =========================
   // DATA
-  // =========================
   const [books, setBooks] = useState(
     JSON.parse(localStorage.getItem("books")) || []
   );
-
   const [members, setMembers] = useState(
     JSON.parse(localStorage.getItem("members")) || []
   );
-
   const [borrows, setBorrows] = useState(
     JSON.parse(localStorage.getItem("borrows")) || []
   );
-
   const [returns, setReturns] = useState(
     JSON.parse(localStorage.getItem("returns")) || []
   );
-
   const [transactions, setTransactions] = useState(
     JSON.parse(localStorage.getItem("transactions")) || []
   );
 
-  // =========================
   // PAGE
-  // =========================
   const [page, setPage] = useState("dashboard");
 
-  // =========================
   // BOOK FORM
-  // =========================
   const [bookTitle, setBookTitle] = useState("");
   const [bookAuthor, setBookAuthor] = useState("");
   const [bookGenre, setBookGenre] = useState("");
@@ -49,43 +38,42 @@ function App() {
   const [editingBook, setEditingBook] = useState(null);
   const [bookSearch, setBookSearch] = useState("");
 
-  // =========================
   // MEMBER FORM
-  // =========================
   const [memberID, setMemberID] = useState("");
   const [memberName, setMemberName] = useState("");
   const [memberRole, setMemberRole] = useState("");
   const [editingMember, setEditingMember] = useState(null);
   const [memberSearch, setMemberSearch] = useState("");
 
-  // =========================
-  // BORROW FORM
-  // =========================
+  // ADMIN AND LIBRARIAN BORROW FORM
   const [borrowID, setBorrowID] = useState("");
   const [borrowMember, setBorrowMember] = useState("");
   const [borrowBook, setBorrowBook] = useState("");
   const [borrowDate, setBorrowDate] = useState("");
   const [dueDate, setDueDate] = useState("");
 
-  // =========================
+  // USER BORROW FORM
+  const [userBookISBN, setUserBookISBN] = useState("");
+  const [userBorrowDate, setUserBorrowDate] = useState("");
+  const [userDueDate, setUserDueDate] = useState("");
+
   // RETURN FORM
-  // =========================
   const [returnID, setReturnID] = useState("");
   const [returnBorrow, setReturnBorrow] = useState("");
   const [returnDate, setReturnDate] = useState("");
 
-  // =========================
+  // USER RETURN FORM
+  const [userReturnBorrow, setUserReturnBorrow] = useState("");
+  const [userReturnDate, setUserReturnDate] = useState("");
+
   // TRANSACTION FORM
-  // =========================
   const [transactionID, setTransactionID] = useState("");
   const [transactionBook, setTransactionBook] = useState("");
   const [transactionType, setTransactionType] = useState("");
   const [transactionQuantity, setTransactionQuantity] = useState("");
   const [transactionDate, setTransactionDate] = useState("");
 
-  // =========================
   // SAVE DATA
-  // =========================
   useEffect(() => {
     localStorage.setItem("books", JSON.stringify(books));
   }, [books]);
@@ -106,28 +94,17 @@ function App() {
     localStorage.setItem("transactions", JSON.stringify(transactions));
   }, [transactions]);
 
-  // =========================
   // LOGIN
-  // =========================
   function login(e) {
     e.preventDefault();
 
-    if (
-      username.trim() === "" ||
-      password.trim() === "" ||
-      role === ""
-    ) {
-      alert("Please enter username, password and select a role.");
+    if (!username.trim() || !password.trim() || !role) {
+      alert("Please enter your username, password and select a role.");
       return;
     }
 
     setLoggedIn(true);
-
-    if (role === "User") {
-      setPage("books");
-    } else {
-      setPage("dashboard");
-    }
+    setPage(role === "User" ? "books" : "dashboard");
   }
 
   function logout() {
@@ -138,9 +115,7 @@ function App() {
     setPage("dashboard");
   }
 
-  // =========================
   // DASHBOARD
-  // =========================
   const totalBooks = books.length;
   const totalMembers = members.length;
   const borrowedBooks = borrows.length;
@@ -162,9 +137,7 @@ function App() {
     return due < today;
   }).length;
 
-  // =========================
   // BOOKS
-  // =========================
   function clearBookForm() {
     setBookTitle("");
     setBookAuthor("");
@@ -178,39 +151,39 @@ function App() {
     e.preventDefault();
 
     if (
-      bookTitle.trim() === "" ||
-      bookAuthor.trim() === "" ||
-      bookGenre.trim() === "" ||
-      bookISBN.trim() === "" ||
-      bookQuantity === ""
+      !bookTitle.trim() ||
+      !bookAuthor.trim() ||
+      !bookGenre.trim() ||
+      !bookISBN.trim() ||
+      bookQuantity === "" ||
+      Number(bookQuantity) < 0
     ) {
-      alert("Please fill in all book information.");
+      alert("Please enter all book information correctly.");
       return;
     }
 
     if (
       books.some(
         (book) =>
-          book.isbn.toLowerCase() ===
-          bookISBN.trim().toLowerCase()
+          book.isbn.toLowerCase() === bookISBN.trim().toLowerCase()
       )
     ) {
       alert("A book with this ISBN already exists.");
       return;
     }
 
-    const newBook = {
-      title: bookTitle.trim(),
-      author: bookAuthor.trim(),
-      genre: bookGenre.trim(),
-      isbn: bookISBN.trim(),
-      stock: Number(bookQuantity),
-    };
-
-    setBooks([...books, newBook]);
+    setBooks([
+      ...books,
+      {
+        title: bookTitle.trim(),
+        author: bookAuthor.trim(),
+        genre: bookGenre.trim(),
+        isbn: bookISBN.trim(),
+        stock: Number(bookQuantity),
+      },
+    ]);
 
     clearBookForm();
-
     alert("Book added successfully!");
   }
 
@@ -230,6 +203,29 @@ function App() {
 
     if (editingBook === null) return;
 
+    if (
+      !bookTitle.trim() ||
+      !bookAuthor.trim() ||
+      !bookGenre.trim() ||
+      !bookISBN.trim() ||
+      bookQuantity === "" ||
+      Number(bookQuantity) < 0
+    ) {
+      alert("Please enter all book information correctly.");
+      return;
+    }
+
+    if (
+      books.some(
+        (book, index) =>
+          index !== editingBook &&
+          book.isbn.toLowerCase() === bookISBN.trim().toLowerCase()
+      )
+    ) {
+      alert("Another book already uses this ISBN.");
+      return;
+    }
+
     const updatedBooks = [...books];
 
     updatedBooks[editingBook] = {
@@ -242,21 +238,25 @@ function App() {
 
     setBooks(updatedBooks);
     clearBookForm();
-
     alert("Book updated successfully!");
   }
 
   function deleteBook(index) {
+    const book = books[index];
+
+    if (
+      borrows.some((borrow) => borrow.bookISBN === book.isbn)
+    ) {
+      alert("This book has an active borrowing record and cannot be deleted.");
+      return;
+    }
+
     if (window.confirm("Are you sure you want to delete this book?")) {
-      const updatedBooks = [...books];
-      updatedBooks.splice(index, 1);
-      setBooks(updatedBooks);
+      setBooks(books.filter((_, i) => i !== index));
     }
   }
 
-  // =========================
   // MEMBERS
-  // =========================
   function clearMemberForm() {
     setMemberID("");
     setMemberName("");
@@ -267,11 +267,7 @@ function App() {
   function addMember(e) {
     e.preventDefault();
 
-    if (
-      memberID.trim() === "" ||
-      memberName.trim() === "" ||
-      memberRole === ""
-    ) {
+    if (!memberID.trim() || !memberName.trim() || !memberRole) {
       alert("Please fill in all user information.");
       return;
     }
@@ -281,16 +277,16 @@ function App() {
       return;
     }
 
-    const newMember = {
-      id: memberID.trim(),
-      name: memberName.trim(),
-      role: memberRole,
-    };
-
-    setMembers([...members, newMember]);
+    setMembers([
+      ...members,
+      {
+        id: memberID.trim(),
+        name: memberName.trim(),
+        role: memberRole,
+      },
+    ]);
 
     clearMemberForm();
-
     alert("User added successfully!");
   }
 
@@ -308,6 +304,21 @@ function App() {
 
     if (editingMember === null) return;
 
+    if (!memberID.trim() || !memberName.trim() || !memberRole) {
+      alert("Please fill in all user information.");
+      return;
+    }
+
+    if (
+      members.some(
+        (member, index) =>
+          index !== editingMember && member.id === memberID.trim()
+      )
+    ) {
+      alert("This Membership ID already exists.");
+      return;
+    }
+
     const updatedMembers = [...members];
 
     updatedMembers[editingMember] = {
@@ -318,32 +329,39 @@ function App() {
 
     setMembers(updatedMembers);
     clearMemberForm();
-
     alert("User updated successfully!");
   }
 
   function deleteMember(index) {
+    const member = members[index];
+
+    if (borrows.some((borrow) => borrow.memberID === member.id)) {
+      alert("This user has borrowing records and cannot be deleted.");
+      return;
+    }
+
     if (window.confirm("Are you sure you want to delete this user?")) {
-      const updatedMembers = [...members];
-      updatedMembers.splice(index, 1);
-      setMembers(updatedMembers);
+      setMembers(members.filter((_, i) => i !== index));
     }
   }
 
-  // =========================
-  // BORROW
-  // =========================
+  // BORROW FOR ADMIN AND LIBRARIAN
   function addBorrow(e) {
     e.preventDefault();
 
     if (
-      borrowID.trim() === "" ||
-      borrowMember === "" ||
-      borrowBook === "" ||
-      borrowDate === "" ||
-      dueDate === ""
+      !borrowID.trim() ||
+      !borrowMember ||
+      !borrowBook ||
+      !borrowDate ||
+      !dueDate
     ) {
       alert("Please fill in all borrow information.");
+      return;
+    }
+
+    if (dueDate < borrowDate) {
+      alert("The due date cannot be before the borrow date.");
       return;
     }
 
@@ -352,37 +370,36 @@ function App() {
       return;
     }
 
-    const bookIndex = books.findIndex(
-      (book) => book.isbn === borrowBook
-    );
+    const book = books.find((item) => item.isbn === borrowBook);
 
-    if (bookIndex === -1) {
+    if (!book) {
       alert("Book not found.");
       return;
     }
 
-    if (Number(books[bookIndex].stock) <= 0) {
+    if (Number(book.stock) <= 0) {
       alert("This book is out of stock.");
       return;
     }
 
-    const updatedBooks = [...books];
+    setBooks(
+      books.map((item) =>
+        item.isbn === borrowBook
+          ? { ...item, stock: Number(item.stock) - 1 }
+          : item
+      )
+    );
 
-    updatedBooks[bookIndex] = {
-      ...updatedBooks[bookIndex],
-      stock: Number(updatedBooks[bookIndex].stock) - 1,
-    };
-
-    const newBorrow = {
-      id: borrowID.trim(),
-      memberID: borrowMember,
-      bookISBN: borrowBook,
-      borrowDate: borrowDate,
-      dueDate: dueDate,
-    };
-
-    setBooks(updatedBooks);
-    setBorrows([...borrows, newBorrow]);
+    setBorrows([
+      ...borrows,
+      {
+        id: borrowID.trim(),
+        memberID: borrowMember,
+        bookISBN: borrowBook,
+        borrowDate,
+        dueDate,
+      },
+    ]);
 
     setBorrowID("");
     setBorrowMember("");
@@ -393,19 +410,58 @@ function App() {
     alert("Book borrowed successfully!");
   }
 
-  function deleteBorrow(index) {
-    if (
-      window.confirm(
-        "Are you sure you want to delete this borrow record?"
-      )
-    ) {
-      const updatedBorrows = [...borrows];
-      updatedBorrows.splice(index, 1);
-      setBorrows(updatedBorrows);
+  // BORROW FOR USER
+  function borrowBookAsUser(e) {
+    e.preventDefault();
+
+    if (!userBookISBN || !userBorrowDate || !userDueDate) {
+      alert("Please select a book, borrow date and due date.");
+      return;
     }
+
+    if (userDueDate < userBorrowDate) {
+      alert("The due date cannot be before the borrow date.");
+      return;
+    }
+
+    const book = books.find((item) => item.isbn === userBookISBN);
+
+    if (!book || Number(book.stock) <= 0) {
+      alert("This book is not currently available.");
+      return;
+    }
+
+    const newBorrow = {
+      id: `BOR-${Date.now()}`,
+      memberID: username.trim(),
+      username: username.trim().toLowerCase(),
+      bookISBN: userBookISBN,
+      borrowDate: userBorrowDate,
+      dueDate: userDueDate,
+    };
+
+    setBooks(
+      books.map((item) =>
+        item.isbn === userBookISBN
+          ? { ...item, stock: Number(item.stock) - 1 }
+          : item
+      )
+    );
+
+    setBorrows([...borrows, newBorrow]);
+
+    setUserBookISBN("");
+    setUserBorrowDate("");
+    setUserDueDate("");
+
+    alert("Book borrowed successfully! Check My Borrowing for your due date.");
+    setPage("myBorrowing");
   }
 
+  // BORROW STATUS
   function getBorrowStatus(date) {
+    if (!date) return "Unknown";
+
     const today = new Date();
     const due = new Date(date);
 
@@ -418,17 +474,82 @@ function App() {
     return "On Time";
   }
 
-  // =========================
-  // RETURNS
-  // =========================
+  // RETURN A BOOK
+  function recordReturn(borrow, chosenReturnDate, returnRecordID) {
+    const book = books.find((item) => item.isbn === borrow.bookISBN);
+
+    if (!book) {
+      alert("The book for this borrowing record could not be found.");
+      return false;
+    }
+
+    if (chosenReturnDate < borrow.borrowDate) {
+      alert("The return date cannot be before the borrow date.");
+      return false;
+    }
+
+    const newReturn = {
+      id: returnRecordID,
+      borrowID: borrow.id,
+      memberID: borrow.memberID,
+      username: borrow.username || "",
+      bookISBN: borrow.bookISBN,
+      returnDate: chosenReturnDate,
+    };
+
+    setBooks(
+      books.map((item) =>
+        item.isbn === borrow.bookISBN
+          ? { ...item, stock: Number(item.stock) + 1 }
+          : item
+      )
+    );
+
+    setReturns([...returns, newReturn]);
+    setBorrows(borrows.filter((item) => item.id !== borrow.id));
+
+    return true;
+  }
+
+  // RETURN FOR USER
+  function returnMyBook(e) {
+    e.preventDefault();
+
+    if (!userReturnBorrow || !userReturnDate) {
+      alert("Please select a book to return and its return date.");
+      return;
+    }
+
+    const borrow = borrows.find(
+      (item) =>
+        item.id === userReturnBorrow &&
+        item.username === username.trim().toLowerCase()
+    );
+
+    if (!borrow) {
+      alert("Your borrowing record could not be found.");
+      return;
+    }
+
+    const success = recordReturn(
+      borrow,
+      userReturnDate,
+      `RET-${Date.now()}`
+    );
+
+    if (success) {
+      setUserReturnBorrow("");
+      setUserReturnDate("");
+      alert("Book returned successfully!");
+      setPage("myReturns");
+    }
+  }
+
+  // RETURN FOR ADMIN AND LIBRARIAN
   function addReturn(e) {
     e.preventDefault();
 
-    if (
-      returnID.trim() === "" ||
-      returnBorrow === "" ||
-      returnDate === ""
-    ) {
+    if (!returnID.trim() || !returnBorrow || !returnDate) {
       alert("Please fill in all return information.");
       return;
     }
@@ -438,76 +559,33 @@ function App() {
       return;
     }
 
-    const borrowIndex = borrows.findIndex(
-      (borrow) => borrow.id === returnBorrow
-    );
+    const borrow = borrows.find((item) => item.id === returnBorrow);
 
-    if (borrowIndex === -1) {
+    if (!borrow) {
       alert("Borrow record not found.");
       return;
     }
 
-    const borrow = borrows[borrowIndex];
+    const success = recordReturn(borrow, returnDate, returnID.trim());
 
-    const newReturn = {
-      id: returnID.trim(),
-      borrowID: borrow.id,
-      memberID: borrow.memberID,
-      bookISBN: borrow.bookISBN,
-      returnDate: returnDate,
-    };
-
-    const bookIndex = books.findIndex(
-      (book) => book.isbn === borrow.bookISBN
-    );
-
-    const updatedBooks = [...books];
-
-    if (bookIndex !== -1) {
-      updatedBooks[bookIndex] = {
-        ...updatedBooks[bookIndex],
-        stock: Number(updatedBooks[bookIndex].stock) + 1,
-      };
-    }
-
-    const updatedBorrows = [...borrows];
-    updatedBorrows.splice(borrowIndex, 1);
-
-    setReturns([...returns, newReturn]);
-    setBorrows(updatedBorrows);
-    setBooks(updatedBooks);
-
-    setReturnID("");
-    setReturnBorrow("");
-    setReturnDate("");
-
-    alert("Book returned successfully!");
-  }
-
-  function deleteReturn(index) {
-    if (
-      window.confirm(
-        "Are you sure you want to delete this return record?"
-      )
-    ) {
-      const updatedReturns = [...returns];
-      updatedReturns.splice(index, 1);
-      setReturns(updatedReturns);
+    if (success) {
+      setReturnID("");
+      setReturnBorrow("");
+      setReturnDate("");
+      alert("Book returned successfully!");
     }
   }
 
-  // =========================
-  // TRANSACTIONS
-  // =========================
+  // STOCK TRANSACTIONS
   function addTransaction(e) {
     e.preventDefault();
 
     if (
-      transactionID.trim() === "" ||
-      transactionBook === "" ||
-      transactionType === "" ||
+      !transactionID.trim() ||
+      !transactionBook ||
+      !transactionType ||
       transactionQuantity === "" ||
-      transactionDate === ""
+      !transactionDate
     ) {
       alert("Please fill in all transaction information.");
       return;
@@ -515,8 +593,7 @@ function App() {
 
     if (
       transactions.some(
-        (transaction) =>
-          transaction.id === transactionID.trim()
+        (transaction) => transaction.id === transactionID.trim()
       )
     ) {
       alert("This Transaction ID already exists.");
@@ -525,53 +602,50 @@ function App() {
 
     const quantity = Number(transactionQuantity);
 
-    if (quantity <= 0) {
-      alert("Quantity must be greater than zero.");
+    if (!Number.isInteger(quantity) || quantity <= 0) {
+      alert("Quantity must be a positive whole number.");
       return;
     }
 
-    const bookIndex = books.findIndex(
-      (book) => book.isbn === transactionBook
-    );
+    const book = books.find((item) => item.isbn === transactionBook);
 
-    if (bookIndex === -1) {
+    if (!book) {
       alert("Book not found.");
       return;
     }
 
-    const updatedBooks = [...books];
-
-    if (transactionType === "deduct") {
-      if (
-        Number(updatedBooks[bookIndex].stock) < quantity
-      ) {
-        alert("Not enough stock available.");
-        return;
-      }
-
-      updatedBooks[bookIndex] = {
-        ...updatedBooks[bookIndex],
-        stock:
-          Number(updatedBooks[bookIndex].stock) - quantity,
-      };
-    } else {
-      updatedBooks[bookIndex] = {
-        ...updatedBooks[bookIndex],
-        stock:
-          Number(updatedBooks[bookIndex].stock) + quantity,
-      };
+    if (
+      transactionType === "deduct" &&
+      Number(book.stock) < quantity
+    ) {
+      alert("Not enough stock available.");
+      return;
     }
 
-    const newTransaction = {
-      id: transactionID.trim(),
-      bookISBN: transactionBook,
-      type: transactionType,
-      quantity: quantity,
-      date: transactionDate,
-    };
+    setBooks(
+      books.map((item) => {
+        if (item.isbn !== transactionBook) return item;
 
-    setBooks(updatedBooks);
-    setTransactions([...transactions, newTransaction]);
+        return {
+          ...item,
+          stock:
+            transactionType === "deduct"
+              ? Number(item.stock) - quantity
+              : Number(item.stock) + quantity,
+        };
+      })
+    );
+
+    setTransactions([
+      ...transactions,
+      {
+        id: transactionID.trim(),
+        bookISBN: transactionBook,
+        type: transactionType,
+        quantity,
+        date: transactionDate,
+      },
+    ]);
 
     setTransactionID("");
     setTransactionBook("");
@@ -582,9 +656,7 @@ function App() {
     alert("Stock transaction recorded successfully!");
   }
 
-  // =========================
   // FILTERS
-  // =========================
   const filteredBooks = books.filter((book) => {
     const text =
       `${book.title} ${book.author} ${book.genre} ${book.isbn}`.toLowerCase();
@@ -599,9 +671,18 @@ function App() {
     return text.includes(memberSearch.toLowerCase());
   });
 
-  // =========================
+  // CURRENT USER'S RECORDS
+  const myBorrows = borrows.filter(
+    (borrow) =>
+      borrow.username === username.trim().toLowerCase()
+  );
+
+  const myReturns = returns.filter(
+    (item) =>
+      item.username === username.trim().toLowerCase()
+  );
+
   // LOGIN PAGE
-  // =========================
   if (!loggedIn) {
     return (
       <div id="app">
@@ -611,7 +692,6 @@ function App() {
 
           <form onSubmit={login}>
             <label>Username</label>
-
             <input
               type="text"
               placeholder="Enter your username"
@@ -620,7 +700,6 @@ function App() {
             />
 
             <label>Password</label>
-
             <input
               type="password"
               placeholder="Enter your password"
@@ -629,7 +708,6 @@ function App() {
             />
 
             <label>Role</label>
-
             <select
               value={role}
               onChange={(e) => setRole(e.target.value)}
@@ -647,13 +725,10 @@ function App() {
     );
   }
 
-  // =========================
   // MAIN SYSTEM
-  // =========================
   return (
     <div id="app">
       <div className="page">
-
         <h1>Community Library Dashboard</h1>
 
         <p className="welcome">
@@ -661,21 +736,33 @@ function App() {
         </p>
 
         <div className="navigation">
-
           {role !== "User" && (
             <button onClick={() => setPage("dashboard")}>
               Dashboard
             </button>
           )}
 
-          <button onClick={() => setPage("books")}>
-            Books
-          </button>
+          <button onClick={() => setPage("books")}>Books</button>
+
+          {role === "User" && (
+            <>
+              <button onClick={() => setPage("borrow")}>
+                Borrow a Book
+              </button>
+              <button onClick={() => setPage("myBorrowing")}>
+                My Borrowing
+              </button>
+              <button onClick={() => setPage("returns")}>
+                Return a Book
+              </button>
+              <button onClick={() => setPage("myReturns")}>
+                My Returns
+              </button>
+            </>
+          )}
 
           {role === "Admin" && (
-            <button onClick={() => setPage("members")}>
-              Users
-            </button>
+            <button onClick={() => setPage("members")}>Users</button>
           )}
 
           {(role === "Admin" || role === "Librarian") && (
@@ -683,59 +770,45 @@ function App() {
               <button onClick={() => setPage("borrow")}>
                 Borrow Books
               </button>
-
               <button onClick={() => setPage("returns")}>
                 Returns
               </button>
-
               <button onClick={() => setPage("transactions")}>
                 Transactions
               </button>
             </>
           )}
 
-          <button onClick={logout}>
-            Logout
-          </button>
-
+          <button onClick={logout}>Logout</button>
         </div>
 
-        {/* ================= DASHBOARD ================= */}
-
+        {/* DASHBOARD */}
         {page === "dashboard" && role !== "User" && (
           <section className="librarySection">
-
             <div className="stats">
-
               <div className="statCard">
                 <h3>Total Books</h3>
                 <p>{totalBooks}</p>
               </div>
-
               <div className="statCard">
                 <h3>Total Members</h3>
                 <p>{totalMembers}</p>
               </div>
-
               <div className="statCard">
                 <h3>Borrowed Books</h3>
                 <p>{borrowedBooks}</p>
               </div>
-
               <div className="statCard">
                 <h3>Available Books</h3>
                 <p>{availableBooks}</p>
               </div>
-
               <div className="statCard">
                 <h3>Overdue Books</h3>
                 <p>{overdueBooks}</p>
               </div>
-
             </div>
 
             <h2>Current Book Availability</h2>
-
             <table>
               <thead>
                 <tr>
@@ -745,23 +818,16 @@ function App() {
                   <th>Available Copies</th>
                 </tr>
               </thead>
-
               <tbody>
                 {books.length === 0 ? (
                   <tr>
-                    <td colSpan="4">
-                      No books available yet.
-                    </td>
+                    <td colSpan="4">No books available yet.</td>
                   </tr>
                 ) : (
-                  books.map((book, index) => (
+                  books.map((book) => (
                     <tr
-                      key={index}
-                      className={
-                        Number(book.stock) <= 1
-                          ? "lowStock"
-                          : ""
-                      }
+                      key={book.isbn}
+                      className={Number(book.stock) <= 1 ? "lowStock" : ""}
                     >
                       <td>{book.title}</td>
                       <td>{book.author}</td>
@@ -772,87 +838,66 @@ function App() {
                 )}
               </tbody>
             </table>
-
           </section>
         )}
 
-        {/* ================= BOOKS ================= */}
-
+        {/* BOOKS */}
         {page === "books" && (
           <section className="librarySection">
-
-            <h2>Book Management</h2>
+            <h2>{role === "User" ? "Available Books" : "Book Management"}</h2>
 
             {role !== "User" && (
               <form
                 className="libraryForm"
-                onSubmit={
-                  editingBook === null
-                    ? addBook
-                    : updateBook
-                }
+                onSubmit={editingBook === null ? addBook : updateBook}
               >
-
                 <input
                   type="text"
                   placeholder="Book Title"
                   value={bookTitle}
-                  onChange={(e) =>
-                    setBookTitle(e.target.value)
-                  }
+                  onChange={(e) => setBookTitle(e.target.value)}
+                  required
                 />
-
                 <input
                   type="text"
                   placeholder="Author"
                   value={bookAuthor}
-                  onChange={(e) =>
-                    setBookAuthor(e.target.value)
-                  }
+                  onChange={(e) => setBookAuthor(e.target.value)}
+                  required
                 />
-
                 <input
                   type="text"
                   placeholder="Genre"
                   value={bookGenre}
-                  onChange={(e) =>
-                    setBookGenre(e.target.value)
-                  }
+                  onChange={(e) => setBookGenre(e.target.value)}
+                  required
                 />
-
                 <input
                   type="text"
                   placeholder="ISBN"
                   value={bookISBN}
-                  onChange={(e) =>
-                    setBookISBN(e.target.value)
-                  }
+                  onChange={(e) => setBookISBN(e.target.value)}
+                  required
                 />
-
                 <input
                   type="number"
+                  min="0"
+                  step="1"
                   placeholder="Initial Quantity"
                   value={bookQuantity}
-                  onChange={(e) =>
-                    setBookQuantity(e.target.value)
-                  }
+                  onChange={(e) => setBookQuantity(e.target.value)}
+                  required
                 />
 
                 <button type="submit">
-                  {editingBook === null
-                    ? "Add Book"
-                    : "Update Book"}
+                  {editingBook === null ? "Add Book" : "Update Book"}
                 </button>
 
                 {editingBook !== null && (
-                  <button
-                    type="button"
-                    onClick={clearBookForm}
-                  >
+                  <button type="button" onClick={clearBookForm}>
                     Cancel
                   </button>
                 )}
-
               </form>
             )}
 
@@ -861,9 +906,7 @@ function App() {
               type="text"
               placeholder="Search books..."
               value={bookSearch}
-              onChange={(e) =>
-                setBookSearch(e.target.value)
-              }
+              onChange={(e) => setBookSearch(e.target.value)}
             />
 
             <table>
@@ -877,31 +920,23 @@ function App() {
                   {role !== "User" && <th>Actions</th>}
                 </tr>
               </thead>
-
               <tbody>
                 {filteredBooks.length === 0 ? (
                   <tr>
-                    <td colSpan="6">
+                    <td colSpan={role === "User" ? "5" : "6"}>
                       No books found.
                     </td>
                   </tr>
                 ) : (
                   filteredBooks.map((book) => {
-
-                    const realIndex =
-                      books.findIndex(
-                        (item) =>
-                          item.isbn === book.isbn
-                      );
+                    const realIndex = books.findIndex(
+                      (item) => item.isbn === book.isbn
+                    );
 
                     return (
                       <tr
                         key={book.isbn}
-                        className={
-                          Number(book.stock) <= 1
-                            ? "lowStock"
-                            : ""
-                        }
+                        className={Number(book.stock) <= 1 ? "lowStock" : ""}
                       >
                         <td>{book.title}</td>
                         <td>{book.author}</td>
@@ -911,19 +946,10 @@ function App() {
 
                         {role !== "User" && (
                           <td>
-                            <button
-                              onClick={() =>
-                                startEditBook(realIndex)
-                              }
-                            >
+                            <button onClick={() => startEditBook(realIndex)}>
                               Edit
                             </button>
-
-                            <button
-                              onClick={() =>
-                                deleteBook(realIndex)
-                              }
-                            >
+                            <button onClick={() => deleteBook(realIndex)}>
                               Delete
                             </button>
                           </td>
@@ -935,81 +961,56 @@ function App() {
               </tbody>
             </table>
 
+            {role === "User" && (
+              <p>Select “Borrow a Book” above to borrow an available copy.</p>
+            )}
           </section>
         )}
 
-        {/* ================= USERS ================= */}
-
+        {/* USER MANAGEMENT */}
         {page === "members" && role === "Admin" && (
           <section className="librarySection">
-
             <h2>User Management</h2>
 
             <form
               className="libraryForm"
-              onSubmit={
-                editingMember === null
-                  ? addMember
-                  : updateMember
-              }
+              onSubmit={editingMember === null ? addMember : updateMember}
             >
-
               <input
                 type="text"
                 placeholder="Membership ID"
                 value={memberID}
-                onChange={(e) =>
-                  setMemberID(e.target.value)
-                }
+                onChange={(e) => setMemberID(e.target.value)}
+                required
               />
-
               <input
                 type="text"
                 placeholder="Name"
                 value={memberName}
-                onChange={(e) =>
-                  setMemberName(e.target.value)
-                }
+                onChange={(e) => setMemberName(e.target.value)}
+                required
               />
 
               <select
                 value={memberRole}
-                onChange={(e) =>
-                  setMemberRole(e.target.value)
-                }
+                onChange={(e) => setMemberRole(e.target.value)}
+                required
               >
-                <option value="">
-                  Select Role
-                </option>
-
-                <option value="Student">
-                  Student
-                </option>
-
-                <option value="Librarian">
-                  Librarian
-                </option>
-
-                <option value="Admin">
-                  Admin
-                </option>
+                <option value="">Select Role</option>
+                <option value="Student">Student</option>
+                <option value="Librarian">Librarian</option>
+                <option value="Admin">Admin</option>
               </select>
 
               <button type="submit">
-                {editingMember === null
-                  ? "Add User"
-                  : "Update User"}
+                {editingMember === null ? "Add User" : "Update User"}
               </button>
 
               {editingMember !== null && (
-                <button
-                  type="button"
-                  onClick={clearMemberForm}
-                >
+                <button type="button" onClick={clearMemberForm}>
                   Cancel
                 </button>
               )}
-
             </form>
 
             <input
@@ -1017,9 +1018,7 @@ function App() {
               type="text"
               placeholder="Search users..."
               value={memberSearch}
-              onChange={(e) =>
-                setMemberSearch(e.target.value)
-              }
+              onChange={(e) => setMemberSearch(e.target.value)}
             />
 
             <table>
@@ -1031,45 +1030,27 @@ function App() {
                   <th>Actions</th>
                 </tr>
               </thead>
-
               <tbody>
                 {filteredMembers.length === 0 ? (
                   <tr>
-                    <td colSpan="4">
-                      No users found.
-                    </td>
+                    <td colSpan="4">No users found.</td>
                   </tr>
                 ) : (
                   filteredMembers.map((member) => {
-
-                    const realIndex =
-                      members.findIndex(
-                        (item) =>
-                          item.id === member.id
-                      );
+                    const realIndex = members.findIndex(
+                      (item) => item.id === member.id
+                    );
 
                     return (
                       <tr key={member.id}>
                         <td>{member.id}</td>
-
                         <td>{member.name}</td>
-
                         <td>{member.role}</td>
-
                         <td>
-                          <button
-                            onClick={() =>
-                              startEditMember(realIndex)
-                            }
-                          >
+                          <button onClick={() => startEditMember(realIndex)}>
                             Edit
                           </button>
-
-                          <button
-                            onClick={() =>
-                              deleteMember(realIndex)
-                            }
-                          >
+                          <button onClick={() => deleteMember(realIndex)}>
                             Delete
                           </button>
                         </td>
@@ -1079,483 +1060,473 @@ function App() {
                 )}
               </tbody>
             </table>
-
           </section>
         )}
 
-        {/* ================= BORROW ================= */}
-
-        {page === "borrow" &&
-          (role === "Admin" || role === "Librarian") && (
+        {/* BORROW PAGE */}
+        {page === "borrow" && role === "User" && (
           <section className="librarySection">
+            <h2>Borrow a Book</h2>
+            <p>Choose an available book and enter your borrowing dates.</p>
 
-            <h2>Borrow Books</h2>
-
-            <form
-              className="libraryForm"
-              onSubmit={addBorrow}
-            >
-
-              <input
-                type="text"
-                placeholder="Borrow ID"
-                value={borrowID}
-                onChange={(e) =>
-                  setBorrowID(e.target.value)
-                }
-              />
-
+            <form className="libraryForm" onSubmit={borrowBookAsUser}>
+              <label>Select Book</label>
               <select
-                value={borrowMember}
-                onChange={(e) =>
-                  setBorrowMember(e.target.value)
-                }
+                value={userBookISBN}
+                onChange={(e) => setUserBookISBN(e.target.value)}
+                required
               >
-                <option value="">
-                  Select User
-                </option>
-
-                {members.map((member) => (
-                  <option
-                    key={member.id}
-                    value={member.id}
-                  >
-                    {member.name} - {member.id}
-                  </option>
-                ))}
-              </select>
-
-              <select
-                value={borrowBook}
-                onChange={(e) =>
-                  setBorrowBook(e.target.value)
-                }
-              >
-                <option value="">
-                  Select Book
-                </option>
-
+                <option value="">Choose an available book</option>
                 {books
-                  .filter(
-                    (book) =>
-                      Number(book.stock) > 0
-                  )
+                  .filter((book) => Number(book.stock) > 0)
                   .map((book) => (
-                    <option
-                      key={book.isbn}
-                      value={book.isbn}
-                    >
-                      {book.title} - Available:{" "}
-                      {book.stock}
+                    <option key={book.isbn} value={book.isbn}>
+                      {book.title} — {book.stock} available
                     </option>
                   ))}
               </select>
 
               <label>Borrow Date</label>
-
               <input
                 type="date"
-                value={borrowDate}
-                onChange={(e) =>
-                  setBorrowDate(e.target.value)
-                }
+                value={userBorrowDate}
+                onChange={(e) => setUserBorrowDate(e.target.value)}
+                required
               />
 
               <label>Due Date</label>
-
               <input
                 type="date"
-                value={dueDate}
-                onChange={(e) =>
-                  setDueDate(e.target.value)
-                }
+                value={userDueDate}
+                min={userBorrowDate || undefined}
+                onChange={(e) => setUserDueDate(e.target.value)}
+                required
               />
 
-              <button type="submit">
-                Borrow Book
-              </button>
-
+              <button type="submit">Borrow Book</button>
             </form>
+          </section>
+        )}
+
+        {/* ADMIN AND LIBRARIAN BORROW RECORDS */}
+        {page === "borrow" &&
+          (role === "Admin" || role === "Librarian") && (
+            <section className="librarySection">
+              <h2>Borrow Books</h2>
+
+              <form className="libraryForm" onSubmit={addBorrow}>
+                <input
+                  type="text"
+                  placeholder="Borrow ID"
+                  value={borrowID}
+                  onChange={(e) => setBorrowID(e.target.value)}
+                  required
+                />
+
+                <label>Select User</label>
+                <select
+                  value={borrowMember}
+                  onChange={(e) => setBorrowMember(e.target.value)}
+                  required
+                >
+                  <option value="">Select User</option>
+                  {members.map((member) => (
+                    <option key={member.id} value={member.id}>
+                      {member.name} - {member.id}
+                    </option>
+                  ))}
+                </select>
+
+                <label>Select Book</label>
+                <select
+                  value={borrowBook}
+                  onChange={(e) => setBorrowBook(e.target.value)}
+                  required
+                >
+                  <option value="">Select Book</option>
+                  {books
+                    .filter((book) => Number(book.stock) > 0)
+                    .map((book) => (
+                      <option key={book.isbn} value={book.isbn}>
+                        {book.title} - Available: {book.stock}
+                      </option>
+                    ))}
+                </select>
+
+                <label>Borrow Date</label>
+                <input
+                  type="date"
+                  value={borrowDate}
+                  onChange={(e) => setBorrowDate(e.target.value)}
+                  required
+                />
+
+                <label>Due Date</label>
+                <input
+                  type="date"
+                  min={borrowDate || undefined}
+                  value={dueDate}
+                  onChange={(e) => setDueDate(e.target.value)}
+                  required
+                />
+
+                <button type="submit">Borrow Book</button>
+              </form>
+
+              <h2>Borrowing Records</h2>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Borrow ID</th>
+                    <th>User</th>
+                    <th>Book</th>
+                    <th>Borrow Date</th>
+                    <th>Due Date</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {borrows.length === 0 ? (
+                    <tr>
+                      <td colSpan="6">No borrow records.</td>
+                    </tr>
+                  ) : (
+                    borrows.map((borrow) => {
+                      const member = members.find(
+                        (item) => item.id === borrow.memberID
+                      );
+                      const book = books.find(
+                        (item) => item.isbn === borrow.bookISBN
+                      );
+
+                      return (
+                        <tr key={borrow.id}>
+                          <td>{borrow.id}</td>
+                          <td>
+                            {member ? member.name : borrow.username || borrow.memberID}
+                          </td>
+                          <td>{book ? book.title : "Unknown Book"}</td>
+                          <td>{borrow.borrowDate}</td>
+                          <td>{borrow.dueDate}</td>
+                          <td>{getBorrowStatus(borrow.dueDate)}</td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </section>
+          )}
+
+        {/* USER'S ACTIVE BORROWING */}
+        {page === "myBorrowing" && role === "User" && (
+          <section className="librarySection">
+            <h2>My Borrowed Books</h2>
+            <p>View your borrowing dates, due dates and book status here.</p>
 
             <table>
               <thead>
                 <tr>
-                  <th>Borrow ID</th>
-                  <th>User</th>
                   <th>Book</th>
                   <th>Borrow Date</th>
                   <th>Due Date</th>
                   <th>Status</th>
-                  <th>Action</th>
                 </tr>
               </thead>
-
               <tbody>
-                {borrows.length === 0 ? (
+                {myBorrows.length === 0 ? (
                   <tr>
-                    <td colSpan="7">
-                      No borrow records.
-                    </td>
+                    <td colSpan="4">You have no active borrowed books.</td>
                   </tr>
                 ) : (
-                  borrows.map((borrow, index) => {
-
-                    const member =
-                      members.find(
-                        (item) =>
-                          item.id ===
-                          borrow.memberID
-                      );
-
-                    const book =
-                      books.find(
-                        (item) =>
-                          item.isbn ===
-                          borrow.bookISBN
-                      );
+                  myBorrows.map((borrow) => {
+                    const book = books.find(
+                      (item) => item.isbn === borrow.bookISBN
+                    );
 
                     return (
                       <tr key={borrow.id}>
-                        <td>{borrow.id}</td>
-
-                        <td>
-                          {member
-                            ? member.name
-                            : "Unknown User"}
-                        </td>
-
-                        <td>
-                          {book
-                            ? book.title
-                            : "Unknown Book"}
-                        </td>
-
+                        <td>{book ? book.title : "Unknown Book"}</td>
                         <td>{borrow.borrowDate}</td>
-
                         <td>{borrow.dueDate}</td>
-
-                        <td>
-                          {getBorrowStatus(
-                            borrow.dueDate
-                          )}
-                        </td>
-
-                        <td>
-                          <button
-                            onClick={() =>
-                              deleteBorrow(index)
-                            }
-                          >
-                            Delete
-                          </button>
-                        </td>
+                        <td>{getBorrowStatus(borrow.dueDate)}</td>
                       </tr>
                     );
                   })
                 )}
               </tbody>
             </table>
-
           </section>
         )}
 
-        {/* ================= RETURNS ================= */}
-
-        {page === "returns" &&
-          (role === "Admin" || role === "Librarian") && (
+        {/* RETURNS */}
+        {page === "returns" && role === "User" && (
           <section className="librarySection">
+            <h2>Return a Book</h2>
+            <p>Select one of your active borrowing records and record the return date.</p>
 
-            <h2>Returns</h2>
-
-            <form
-              className="libraryForm"
-              onSubmit={addReturn}
-            >
-
-              <input
-                type="text"
-                placeholder="Return ID"
-                value={returnID}
-                onChange={(e) =>
-                  setReturnID(e.target.value)
-                }
-              />
-
+            <form className="libraryForm" onSubmit={returnMyBook}>
+              <label>Book to Return</label>
               <select
-                value={returnBorrow}
-                onChange={(e) =>
-                  setReturnBorrow(e.target.value)
-                }
+                value={userReturnBorrow}
+                onChange={(e) => setUserReturnBorrow(e.target.value)}
+                required
               >
-                <option value="">
-                  Select Borrow Record
-                </option>
-
-                {borrows.map((borrow) => {
-
-                  const book =
-                    books.find(
-                      (item) =>
-                        item.isbn ===
-                        borrow.bookISBN
-                    );
+                <option value="">Select your borrowed book</option>
+                {myBorrows.map((borrow) => {
+                  const book = books.find(
+                    (item) => item.isbn === borrow.bookISBN
+                  );
 
                   return (
-                    <option
-                      key={borrow.id}
-                      value={borrow.id}
-                    >
-                      {borrow.id} -{" "}
-                      {book
-                        ? book.title
-                        : "Unknown Book"}
+                    <option key={borrow.id} value={borrow.id}>
+                      {book ? book.title : "Unknown Book"} — Due {borrow.dueDate}
                     </option>
                   );
                 })}
               </select>
 
               <label>Return Date</label>
-
               <input
                 type="date"
-                value={returnDate}
-                onChange={(e) =>
-                  setReturnDate(e.target.value)
-                }
+                value={userReturnDate}
+                onChange={(e) => setUserReturnDate(e.target.value)}
+                required
               />
 
-              <button type="submit">
-                Return Book
-              </button>
-
+              <button type="submit">Record Return</button>
             </form>
+          </section>
+        )}
+
+        {/* ADMIN AND LIBRARIAN RETURNS */}
+        {page === "returns" &&
+          (role === "Admin" || role === "Librarian") && (
+            <section className="librarySection">
+              <h2>Returns</h2>
+
+              <form className="libraryForm" onSubmit={addReturn}>
+                <input
+                  type="text"
+                  placeholder="Return ID"
+                  value={returnID}
+                  onChange={(e) => setReturnID(e.target.value)}
+                  required
+                />
+
+                <label>Borrow Record</label>
+                <select
+                  value={returnBorrow}
+                  onChange={(e) => setReturnBorrow(e.target.value)}
+                  required
+                >
+                  <option value="">Select Borrow Record</option>
+                  {borrows.map((borrow) => {
+                    const book = books.find(
+                      (item) => item.isbn === borrow.bookISBN
+                    );
+
+                    return (
+                      <option key={borrow.id} value={borrow.id}>
+                        {borrow.id} - {book ? book.title : "Unknown Book"}
+                      </option>
+                    );
+                  })}
+                </select>
+
+                <label>Return Date</label>
+                <input
+                  type="date"
+                  value={returnDate}
+                  onChange={(e) => setReturnDate(e.target.value)}
+                  required
+                />
+
+                <button type="submit">Return Book</button>
+              </form>
+
+              <h2>Return Records</h2>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Return ID</th>
+                    <th>Borrow ID</th>
+                    <th>User</th>
+                    <th>Book</th>
+                    <th>Return Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {returns.length === 0 ? (
+                    <tr>
+                      <td colSpan="5">No return records.</td>
+                    </tr>
+                  ) : (
+                    returns.map((item) => {
+                      const member = members.find(
+                        (person) => person.id === item.memberID
+                      );
+                      const book = books.find(
+                        (entry) => entry.isbn === item.bookISBN
+                      );
+
+                      return (
+                        <tr key={item.id}>
+                          <td>{item.id}</td>
+                          <td>{item.borrowID}</td>
+                          <td>
+                            {member ? member.name : item.username || item.memberID}
+                          </td>
+                          <td>{book ? book.title : "Unknown Book"}</td>
+                          <td>{item.returnDate}</td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </section>
+          )}
+
+        {/* USER'S RETURN HISTORY */}
+        {page === "myReturns" && role === "User" && (
+          <section className="librarySection">
+            <h2>My Return History</h2>
 
             <table>
               <thead>
                 <tr>
-                  <th>Return ID</th>
-                  <th>Borrow ID</th>
-                  <th>User</th>
                   <th>Book</th>
+                  <th>Borrow ID</th>
                   <th>Return Date</th>
-                  <th>Action</th>
                 </tr>
               </thead>
-
               <tbody>
-                {returns.length === 0 ? (
+                {myReturns.length === 0 ? (
                   <tr>
-                    <td colSpan="6">
-                      No return records.
-                    </td>
+                    <td colSpan="3">You have no return records yet.</td>
                   </tr>
                 ) : (
-                  returns.map((item, index) => {
-
-                    const member =
-                      members.find(
-                        (member) =>
-                          member.id ===
-                          item.memberID
-                      );
-
-                    const book =
-                      books.find(
-                        (book) =>
-                          book.isbn ===
-                          item.bookISBN
-                      );
+                  myReturns.map((item) => {
+                    const book = books.find(
+                      (entry) => entry.isbn === item.bookISBN
+                    );
 
                     return (
                       <tr key={item.id}>
-                        <td>{item.id}</td>
-
+                        <td>{book ? book.title : "Unknown Book"}</td>
                         <td>{item.borrowID}</td>
-
-                        <td>
-                          {member
-                            ? member.name
-                            : "Unknown User"}
-                        </td>
-
-                        <td>
-                          {book
-                            ? book.title
-                            : "Unknown Book"}
-                        </td>
-
                         <td>{item.returnDate}</td>
-
-                        <td>
-                          <button
-                            onClick={() =>
-                              deleteReturn(index)
-                            }
-                          >
-                            Delete
-                          </button>
-                        </td>
                       </tr>
                     );
                   })
                 )}
               </tbody>
             </table>
-
           </section>
         )}
 
-        {/* ================= TRANSACTIONS ================= */}
-
+        {/* TRANSACTIONS */}
         {page === "transactions" &&
           (role === "Admin" || role === "Librarian") && (
-          <section className="librarySection">
+            <section className="librarySection">
+              <h2>Transactions</h2>
 
-            <h2>Transactions</h2>
+              <form className="libraryForm" onSubmit={addTransaction}>
+                <input
+                  type="text"
+                  placeholder="Transaction ID"
+                  value={transactionID}
+                  onChange={(e) => setTransactionID(e.target.value)}
+                  required
+                />
 
-            <form
-              className="libraryForm"
-              onSubmit={addTransaction}
-            >
+                <label>Select Book</label>
+                <select
+                  value={transactionBook}
+                  onChange={(e) => setTransactionBook(e.target.value)}
+                  required
+                >
+                  <option value="">Select Book</option>
+                  {books.map((book) => (
+                    <option key={book.isbn} value={book.isbn}>
+                      {book.title}
+                    </option>
+                  ))}
+                </select>
 
-              <input
-                type="text"
-                placeholder="Transaction ID"
-                value={transactionID}
-                onChange={(e) =>
-                  setTransactionID(e.target.value)
-                }
-              />
+                <label>Transaction Type</label>
+                <select
+                  value={transactionType}
+                  onChange={(e) => setTransactionType(e.target.value)}
+                  required
+                >
+                  <option value="">Select Transaction Type</option>
+                  <option value="add">Add Stock</option>
+                  <option value="deduct">Deduct Stock</option>
+                </select>
 
-              <select
-                value={transactionBook}
-                onChange={(e) =>
-                  setTransactionBook(e.target.value)
-                }
-              >
-                <option value="">
-                  Select Book
-                </option>
+                <input
+                  type="number"
+                  min="1"
+                  step="1"
+                  placeholder="Quantity"
+                  value={transactionQuantity}
+                  onChange={(e) => setTransactionQuantity(e.target.value)}
+                  required
+                />
 
-                {books.map((book) => (
-                  <option
-                    key={book.isbn}
-                    value={book.isbn}
-                  >
-                    {book.title}
-                  </option>
-                ))}
-              </select>
+                <label>Transaction Date</label>
+                <input
+                  type="date"
+                  value={transactionDate}
+                  onChange={(e) => setTransactionDate(e.target.value)}
+                  required
+                />
 
-              <select
-                value={transactionType}
-                onChange={(e) =>
-                  setTransactionType(e.target.value)
-                }
-              >
-                <option value="">
-                  Select Transaction Type
-                </option>
+                <button type="submit">Record Transaction</button>
+              </form>
 
-                <option value="add">
-                  Add Stock
-                </option>
-
-                <option value="deduct">
-                  Deduct Stock
-                </option>
-              </select>
-
-              <input
-                type="number"
-                placeholder="Quantity"
-                value={transactionQuantity}
-                onChange={(e) =>
-                  setTransactionQuantity(
-                    e.target.value
-                  )
-                }
-              />
-
-              <label>Transaction Date</label>
-
-              <input
-                type="date"
-                value={transactionDate}
-                onChange={(e) =>
-                  setTransactionDate(
-                    e.target.value
-                  )
-                }
-              />
-
-              <button type="submit">
-                Record Transaction
-              </button>
-
-            </form>
-
-            <table>
-              <thead>
-                <tr>
-                  <th>Transaction ID</th>
-                  <th>Book</th>
-                  <th>Type</th>
-                  <th>Quantity</th>
-                  <th>Date</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {transactions.length === 0 ? (
+              <table>
+                <thead>
                   <tr>
-                    <td colSpan="5">
-                      No transactions recorded.
-                    </td>
+                    <th>Transaction ID</th>
+                    <th>Book</th>
+                    <th>Type</th>
+                    <th>Quantity</th>
+                    <th>Date</th>
                   </tr>
-                ) : (
-                  transactions.map((transaction) => {
-
-                    const book =
-                      books.find(
-                        (item) =>
-                          item.isbn ===
-                          transaction.bookISBN
+                </thead>
+                <tbody>
+                  {transactions.length === 0 ? (
+                    <tr>
+                      <td colSpan="5">No transactions recorded.</td>
+                    </tr>
+                  ) : (
+                    transactions.map((transaction) => {
+                      const book = books.find(
+                        (item) => item.isbn === transaction.bookISBN
                       );
 
-                    return (
-                      <tr key={transaction.id}>
-                        <td>{transaction.id}</td>
-
-                        <td>
-                          {book
-                            ? book.title
-                            : "Unknown Book"}
-                        </td>
-
-                        <td>
-                          {transaction.type === "add"
-                            ? "Add Stock"
-                            : "Deduct Stock"}
-                        </td>
-
-                        <td>
-                          {transaction.quantity}
-                        </td>
-
-                        <td>
-                          {transaction.date}
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-
-          </section>
-        )}
-
+                      return (
+                        <tr key={transaction.id}>
+                          <td>{transaction.id}</td>
+                          <td>{book ? book.title : "Unknown Book"}</td>
+                          <td>
+                            {transaction.type === "add"
+                              ? "Add Stock"
+                              : "Deduct Stock"}
+                          </td>
+                          <td>{transaction.quantity}</td>
+                          <td>{transaction.date}</td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </section>
+          )}
       </div>
     </div>
   );
